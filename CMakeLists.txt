@@ -157,32 +157,32 @@ add_custom_command(TARGET COMMON POST_BUILD
                        ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/data)
 file(COPY data/ DESTINATION ${CMAKE_BINARY_DIR}/data/)
 file(COPY shaders/ DESTINATION ${CMAKE_BINARY_DIR}/shaders/)
-#SFGE COURSES
-SET(SFGE_COURSE_DIR ${CMAKE_SOURCE_DIR}/main)
-file(GLOB COURSE_FILES ${SFGE_COURSE_DIR}/*.cpp )
-foreach(course_file ${COURSE_FILES} )
+#SFGE MAINS
+SET(SFGE_MAIN_DIR ${CMAKE_SOURCE_DIR}/main)
+file(GLOB MAIN_FILES ${SFGE_MAIN_DIR}/*.cpp )
+foreach(course_file ${MAIN_FILES} )
     # I used a simple string replace, to cut off .cpp.
-    file(RELATIVE_PATH course_relative_path ${SFGE_COURSE_DIR} ${course_file} )
-    string( REPLACE ".cpp" "" course_name ${course_relative_path} )
-	file(GLOB_RECURSE SHADERS_SRC shaders/${course_name}/*.vert shaders/${course_name}/*.frag)
+    file(RELATIVE_PATH main_relative_path ${SFGE_MAIN_DIR} ${course_file} )
+    string( REPLACE ".cpp" "" main_name ${main_relative_path} )
+	file(GLOB_RECURSE SHADERS_SRC shaders/${main_name}/*.vert shaders/${main_name}/*.frag)
 	source_group("Shaders" FILES ${SHADERS_SRC})
 
-    add_executable(${course_name} ${SFGE_COURSE_DIR}/${course_relative_path} ${SHADERS_SRC})
+    add_executable(${main_name} ${SFGE_MAIN_DIR}/${main_relative_path} ${SHADERS_SRC})
     # Make sure YourLib is linked to each app
-    target_link_libraries(${course_name} PUBLIC COMMON)
-	set_property(TARGET ${course_name} PROPERTY CXX_STANDARD 17)
+    target_link_libraries(${main_name} PUBLIC COMMON)
+	set_property(TARGET ${main_name} PROPERTY CXX_STANDARD 17)
 	IF(UNIX)
-		set_target_properties(${course_name} PROPERTIES COMPILE_FLAGS "-save-temps -ffast-math")
+		set_target_properties(${main_name} PROPERTIES COMPILE_FLAGS "-save-temps -ffast-math")
 	ENDIF(UNIX)
-	set_target_properties (${course_name} PROPERTIES
-    FOLDER Courses)
+	set_target_properties (${main_name} PROPERTIES
+    FOLDER Mains)
   IF(USE_EMSCRIPTEN)
-    target_compile_options(${course_name} PUBLIC --emrun)
+    target_compile_options(${main_name} PUBLIC --emrun)
   ENDIF()
-  add_custom_command(TARGET ${course_name} POST_BUILD
+  add_custom_command(TARGET ${main_name} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                        ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_BINARY_DIR}/shaders)
-  add_custom_command(TARGET ${course_name} POST_BUILD
+  add_custom_command(TARGET ${main_name} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                        ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/data)
 endforeach()

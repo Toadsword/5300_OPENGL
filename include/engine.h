@@ -16,9 +16,10 @@
 
 #include <chrono>
 #include <input.h>
+#include <camera.h>
 
 class DrawingProgram;
-
+struct Remotery;
 
 #ifdef USE_SDL2
 typedef SDL_Color Color;
@@ -50,14 +51,13 @@ public:
 
 	Configuration& GetConfiguration();
 	InputManager& GetInputManager();
+	Camera& GetCameraManager();
 	void AddDrawingProgram(DrawingProgram* drawingProgram);
-
 
 	static Engine* GetPtr();
 private:
 	void SwitchWireframeMode();
 	static Engine* enginePtr;
-
 
 #ifdef USE_SDL2
 
@@ -72,8 +72,9 @@ private:
 #endif
 	std::vector<DrawingProgram*> drawingPrograms;
 	InputManager inputManager;
+	Camera camera;
 	Configuration configuration;
-
+	Remotery* rmt;
 	int selectedDrawingProgram = -1;
 	bool wireframeMode = false;
 	bool debugInfo = true;

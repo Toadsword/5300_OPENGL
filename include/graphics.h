@@ -5,6 +5,14 @@
 #include <glm/mat4x4.hpp>
 
 
+struct BasicMaterial
+{
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
+	float shininess;
+};
+
 class Shader
 {
 public:
@@ -18,11 +26,13 @@ public:
 	void SetVec2(const std::string &name, const glm::vec2 &value) const;
 	void SetVec3(const std::string& name, float x, float y, float z) const;
 	void SetVec3(const std::string &name, const glm::vec3 &value) const;
+	void SetVec3(const std::string &name, const float value[3]) const;
 	void SetVec4(const std::string& name, float x, float y, float z, float w);
 	void SetVec4(const std::string &name, const glm::vec4 &value) const;
 	void SetMat2(const std::string &name, const glm::mat2 &mat) const;
 	void SetMat3(const std::string &name, const glm::mat3 &mat) const;
 	void SetMat4(const std::string &name, const glm::mat4 &mat) const;
+	void SetBasicMaterial(const BasicMaterial& basicMaterial);
 private:
 	int shaderProgram = 0;
 };
@@ -45,4 +55,6 @@ protected:
 
 
 unsigned int gliCreateTexture(char const* filename);
-unsigned int stbCreateTexture(const char* filename, bool smooth = true, bool mipMaps = true);
+unsigned int stbCreateTexture(const char* filename, bool smooth = true, bool mipMaps = true, bool clampWrap=false);
+
+unsigned int LoadCubemap(std::vector<std::string>& faces);

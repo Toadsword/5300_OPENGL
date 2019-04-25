@@ -4,11 +4,6 @@
 #include <GL/glew.h>
 #include <engine.h>
 #include <graphics.h>
-#ifdef USE_SFML2
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/OpenGL.hpp>
-#include "imgui-SFML.h"
-#endif
 #ifdef USE_EMSCRIPTEN
 #include <emscripten.h> 
 #endif
@@ -16,13 +11,13 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
+#include <Remotery.h>
 
 Engine* Engine::enginePtr = nullptr;
 
 Engine::Engine()
 {
 	enginePtr = this;
-	
 }
 
 Engine::~Engine()
@@ -37,6 +32,8 @@ Engine::~Engine()
 
 void Engine::Init()
 {
+
+	rmt_CreateGlobalInstance(&rmt);
 #ifdef USE_SDL2
 	SDL_Init(SDL_INIT_VIDEO);
 	// Set our OpenGL version.
@@ -45,7 +42,7 @@ void Engine::Init()
 
 	// 3.2 is part of the modern versions of OpenGL, but most video cards whould be able to run it
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
 
 	// Turn on double buffering with a 24bit Z buffer.
 	// You may need to change this to 16 or 32 for your system
@@ -96,8 +93,10 @@ void Engine::Init()
 
 	engineStartTime = timer.now();
 	previousFrameTime = engineStartTime;
+
+	camera = Camera(window, glm::vec3(0.0f, 0.0f, 0.0f));
 #endif
-	
+
 	for (auto drawingProgram : drawingPrograms)
 	{
 		drawingProgram->Init();
@@ -112,6 +111,8 @@ void Engine::Init()
 
 void Engine::Loop()
 {
+	rmt_ScopedOpenGLSample(EngineLoopGPU);
+	rmt_ScopedCPUSample(EngineLoopCPU, 0);
 	std::chrono::high_resolution_clock::time_point currentFrame = timer.now();
 
 	dt = std::chrono::duration_cast<ms>(currentFrame - previousFrameTime).count() / 1000.0f;
@@ -146,6 +147,9 @@ void Engine::Loop()
 			case SDL_SCANCODE_1:
 				SwitchWireframeMode();
 				break;
+			case SDL_SCANCODE_LALT:
+				camera.SwitchWrapMode();
+				break;
 			default:
 				break;
 			}
@@ -167,12 +171,15 @@ void Engine::Loop()
 	{
 		glPolygonMode(GL_FRONT_AND_BACK,  GL_LINE);
 	}
+
 	for (auto drawingProgram : drawingPrograms)
 	{
 		drawingProgram->Draw();
 	}
 	if (enableImGui)
 	{
+		rmt_ScopedOpenGLSample(RenderImGuiGPU);
+		rmt_ScopedCPUSample(RenderImGuiCPU, 0);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
@@ -182,6 +189,7 @@ void Engine::Loop()
 
 void Engine::GameLoop()
 {
+	rmt_BindOpenGL();
 	running = true;
 	engineStartTime = timer.now();
 	previousFrameTime = engineStartTime;
@@ -195,7 +203,6 @@ void Engine::GameLoop()
 		Loop();
 	}
 #endif
-
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
@@ -207,10 +214,14 @@ void Engine::GameLoop()
 
 	// Shutdown SDL 2
 	SDL_Quit();
+
+
 }
 #endif
 void Engine::UpdateUi()
 {
+	rmt_ScopedOpenGLSample(DrawImGuiGPU);
+	rmt_ScopedCPUSample(DrawImGuiCPU, 0);
 	auto& config = GetConfiguration();
 	const auto windowSize = Vec2f(config.screenWidth, config.screenHeight);
 	if (debugInfo)
@@ -331,6 +342,11 @@ Configuration &Engine::GetConfiguration()
 InputManager& Engine::GetInputManager()
 {
 	return inputManager;
+}
+
+Camera& Engine::GetCameraManager()
+{
+	return camera;
 }
 
 
