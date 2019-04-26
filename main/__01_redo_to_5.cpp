@@ -112,7 +112,7 @@ void TestProgram::Init()
 
 	shaders.push_back(&shaderProgram);
 
-	shaderProgram.Init(
+	shaderProgram.CompileSource(
 		"shaders/__01_redo_to_5/vert.vert",
 		"shaders/__01_redo_to_5/frag.frag"
 	);

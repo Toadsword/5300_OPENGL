@@ -93,6 +93,10 @@ void Camera::ProcessMouseScroll(float yoffset)
 void Camera::SwitchWrapMode()
 {
 	MouseWrapMode = !MouseWrapMode;
+	if(MouseWrapMode)
+		SDL_ShowCursor(SDL_DISABLE);
+	else
+		SDL_ShowCursor(SDL_ENABLE);
 }
 
 void Camera::updateCameraVectors()

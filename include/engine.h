@@ -34,6 +34,8 @@ struct Configuration
 	Color bgColor = {0,0,0,0};
 
 	std::string windowName = "OpenGL";
+	unsigned int glMajorVersion = 4;
+	unsigned int glMinorVersion = 6;
 };
 
 class Engine
@@ -51,13 +53,16 @@ public:
 
 	Configuration& GetConfiguration();
 	InputManager& GetInputManager();
-	Camera& GetCameraManager();
+	Camera& GetCamera();
 	void AddDrawingProgram(DrawingProgram* drawingProgram);
+	std::vector<DrawingProgram*>& GetDrawingPrograms();
+
 
 	static Engine* GetPtr();
 private:
 	void SwitchWireframeMode();
 	static Engine* enginePtr;
+
 
 #ifdef USE_SDL2
 
