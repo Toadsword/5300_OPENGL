@@ -16,7 +16,7 @@ private:
 	static const int cubeLength = 10;
 	Shader objShaderProgram;
 	Shader lampShaderProgram;
-	//pos + normal
+	//pos + normal + texture coords
 	float vertices[8 * 36] = {
 		// positions          // normals           // texture coords
 		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
@@ -158,7 +158,7 @@ void HelloLightCastersDrawingProgram::Draw()
 	Engine* engine = Engine::GetPtr();
 	auto& config = engine->GetConfiguration();
 
-	lightPos = glm::vec3(5.0f*sin(2.0f*M_PI / 3.0f*engine->GetTimeSinceInit()), lightPos.y, 2.0f*cos(2.0f*M_PI / 3.0f*engine->GetTimeSinceInit()));
+	lightPos = glm::vec3(5.0f*sin(2.0f*M_PI / engine->GetTimeSinceInit()), lightPos.y, 2.0f*cos(2.0f*M_PI / engine->GetTimeSinceInit()));
 
 	glEnable(GL_DEPTH_TEST);
 
