@@ -2,9 +2,22 @@
 #include <graphics.h>
 #include "model.h"
 #include "imgui.h"
-
+#include <Remotery.h>
 
 #define REFRACTION
+
+#define SQRT // else Asin
+//#define ASIN // else None
+
+//TIMES : (pour 100 model - DrawCubemaps)
+// SQRT : ~1.8, 2.2ms
+// ASIN : ~2.0, 2.4ms
+
+//TIMES : (pour 1000 model - DrawCubemaps)
+// SQRT : ~17.5, 17.8ms
+// ASIN : ~17.5, 18ms
+
+// --> Pas de grande diff, a moins que j'ai fait de la merde :D
 
 #ifdef REFRACTION
 float refractiveIndexes []=
@@ -147,6 +160,8 @@ private:
 #ifdef REFRACTION
 	int currentRefractiveMaterial = (int)RefractriveMaterial::Glass;
 #endif
+
+	int numModels = 1000;
 };
 
 void HelloCubemapsDrawingProgram::Init()
@@ -229,7 +244,15 @@ void HelloCubemapsDrawingProgram::Init()
 	modelShaderProgram.CompileSource(
 		"shaders/16_hello_cubemaps/model_refl.vert",
 #ifdef REFRACTION
+	#ifdef SQRT
+		"shaders/16_hello_cubemaps/model_refr_sqrt.frag"
+	#else
+		#ifdef ASIN
+		"shaders/16_hello_cubemaps/model_refr_asin.frag"
+		#else
 		"shaders/16_hello_cubemaps/model_refr.frag"
+		#endif
+	#endif
 #else
 		"shaders/16_hello_cubemaps/model_refl.frag"
 #endif
@@ -242,6 +265,7 @@ void HelloCubemapsDrawingProgram::Init()
 
 void HelloCubemapsDrawingProgram::Draw()
 {
+	rmt_ScopedOpenGLSample(DrawCubemaps);
 	ProcessInput();
 	Engine* engine = Engine::GetPtr();
 	auto& config = engine->GetConfiguration();
@@ -258,11 +282,7 @@ void HelloCubemapsDrawingProgram::Draw()
 
 	//Show model
 	modelShaderProgram.Bind();
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
-	model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
 	
-	modelShaderProgram.SetMat4("model", model);
 	modelShaderProgram.SetMat4("projection", projection);
 	modelShaderProgram.SetMat4("view", view);
 
@@ -274,7 +294,16 @@ void HelloCubemapsDrawingProgram::Draw()
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 	modelShaderProgram.SetInt("skybox", 3);
-	this->model.Draw(modelShaderProgram);
+	for(int i = 0; i < numModels; i++)
+	{
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-1.0f * i, -1.75f, -2.0f * i)); // translate it down so it's at the center of the scene
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+
+		modelShaderProgram.SetMat4("model", model);
+
+		this->model.Draw(modelShaderProgram);
+	}
 
 	// cube
 	glm::mat4 cubeModel = glm::mat4(1.0f);
