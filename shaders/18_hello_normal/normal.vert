@@ -5,25 +5,30 @@ layout (location = 3) in vec3 aTangent;
 layout (location = 4) in vec3 aBitangent;
 
 out VS_OUT vs_out;
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+out vec3 TangentLightPos;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
+
+uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
+
 
 void main()
 {
     vs_out.FragPos = vec3(model * vec4(aPos, 1.0));   
     vs_out.TexCoords = aTexCoords;
+	
     vs_out.ViewPos  =  viewPos;
     
     mat3 normalMatrix = transpose(inverse(mat3(model)));
     vec3 T = normalize(normalMatrix * aTangent);
     vec3 N = normalize(normalMatrix * aNormal);
-    vec3 B = normalize(normalMatrix * aBitangent);
+    T = normalize(T - dot(T, N) * N);
+    vec3 B = cross(N, T);
     
-	vs_out.invTBN = mat3(T, B, N);
+    vs_out.invTBN  = mat3(T, B, N);
+        
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 }

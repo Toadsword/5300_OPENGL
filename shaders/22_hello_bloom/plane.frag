@@ -1,13 +1,12 @@
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 in VS_OUT vs_out;
-in mat4 invTBN;
 
 uniform EngineMaterial material;
-uniform vec3 viewPos;
 
 void main()
-{    
+{
 	// obtain normal from normal map in range [0,1]
     vec3 normal = texture(material.texture_normal, vs_out.TexCoords).rgb;
 	// transform normal vector to range [-1,1]
@@ -21,14 +20,7 @@ void main()
     // ambient
     vec3 ambient = ambientIntensity * color;
 	vec3 lightColor = vec3(0.0,0.0,0.0);
-	if(directionalLightEnable)
-	{
-		lightColor += calculate_directional_light(
-		directionLight, 
-		vs_out, 
-		material, 
-		normal);
-	}
+
 	for(int i = 0; i < pointLightsNmb;i++)
 	{
 		lightColor += calculate_point_light(
@@ -37,13 +29,11 @@ void main()
 			material, 
 			normal);
 	}
-	for(int i = 0; i < spotLightsNmb;i++)
-	{
-		lightColor += calculate_spot_light(
-			spotLights[i], 
-			vs_out, 
-			material, 
-			normal);
-	}
-    FragColor = vec4(ambient + lightColor, 1.0);
+
+	FragColor = vec4(ambient + lightColor, 1.0);
+	float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0)
+        BrightColor = vec4(FragColor.rgb, 1.0);
+    else
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

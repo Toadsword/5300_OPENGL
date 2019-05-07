@@ -9,7 +9,6 @@ endif(WIN32)
 
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
-set (CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 set(EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/externals)
 
@@ -51,7 +50,6 @@ foreach(GLSL ${GLSL_SOURCE_FILES})
 	file(RELATIVE_PATH PATH_NAME "${PROJECT_SOURCE_DIR}/shaders/" ${PATH_NAME})
 	#MESSAGE("GLSL PATH: ${PATH_NAME} NAME: ${FILE_NAME}")
 	set(GLSL_OUTPUT "${PROJECT_BINARY_DIR}/shaders/${PATH_NAME}/${FILE_NAME}")
-	MESSAGE(${GLSL_OUTPUT})
 	set(ENGINE_SHADER "${PROJECT_SOURCE_DIR}/shaders/engine/engine${EXTENSION}.glsl")
 	add_custom_command(
 			OUTPUT ${GLSL_OUTPUT}
@@ -62,7 +60,7 @@ foreach(GLSL ${GLSL_SOURCE_FILES})
                              -D DST=${GLSL_OUTPUT}
                              -P ${PROJECT_SOURCE_DIR}/cmake/concat.cmake
 			COMMAND ${GLSL_VALIDATOR} ${GLSL_OUTPUT}
-			DEPENDS ${GLSL})
+			DEPENDS ${GLSL} "${PROJECT_SOURCE_DIR}/shaders/engine/engine${EXTENSION}.glsl")
 	list(APPEND SPIRV_BINARY_FILES ${GLSL_OUTPUT})
 endforeach(GLSL)
 

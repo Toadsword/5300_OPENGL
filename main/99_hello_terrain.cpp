@@ -21,7 +21,6 @@ public:
 	void ProcessInput();
 	void Destroy() override;
 	void UpdateUi() override;
-	void GenTerrain(int wRes, int hRes);
 private:
 	Shader shaderProgram;
 	unsigned VBO[2] = {};
@@ -49,8 +48,6 @@ private:
 	const size_t verticesCount = terrainWidth * terrainHeight;
 	const size_t faceCount = 2 * (terrainWidth - 1) * (terrainHeight - 1);
 
-	GLuint terrainVbo = 0, terrainVboNorm = 0, terrainEbo = 0;
-	int terrainCount = 0;
 };
 
 void HelloTerrainDrawingProgram::Init()
